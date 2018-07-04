@@ -7,7 +7,6 @@ from sklearn.model_selection import train_test_split
 
 prepLGB = prepLGB.prepLGB
 
-del prepLGB
 def lgb_cv_predict(data, new_data, params, num_boost_round, num_iter, valid_size, target):
     predsTest = 0
     for i in range(0, num_iter): 
