@@ -14,8 +14,13 @@ def prepLGB(data, target):
     return lData, labels
 
 """ 
-****** example ******
+##### example #####
+drop_column = ["Cabin", "Name", "Ticket"]
+
+train.drop(drop_column, axis = 1, inplace = True)
+test.drop(drop_column, axis = 1, inplace = True)
 
 trainDataL, labels = prepLGB(data = train, 
                              target = "Survived")
+
 """
