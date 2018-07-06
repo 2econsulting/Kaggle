@@ -37,11 +37,11 @@ cat_w_tune <- tune_catboost(train, y="Survived", max_model=100, cv=3, gridtype="
 saveRDS(cat_w_tune,"./cat_w_tune.Rda")
 
 # predict
-# test_pool <- catboost.load_pool(data = test, cat_features = which(sapply(test, is.factor)))
-# p1 <- catboost.predict(cat_w_tune$finalModel, test_pool, prediction_type="Probability")
-# make_submit(p1, name="R_TEST_CATBOOST_TUNE_P1")
-# pred <- catboost.predict(cat_w_tune$finalModel, test_pool, prediction_type="Class")
-# make_submit(pred, name="R_TEST_CATBOOST_TUNE_PRED")
+test_pool <- catboost.load_pool(data = test, cat_features = which(sapply(test, is.factor)))
+p1 <- catboost.predict(cat_w_tune$finalModel, test_pool, prediction_type="Probability")
+make_submit(p1, name="R_TEST_CATBOOST_TUNE_P1")
+pred <- catboost.predict(cat_w_tune$finalModel, test_pool, prediction_type="Class")
+make_submit(pred, name="R_TEST_CATBOOST_TUNE_PRED")
 
 # catboost_cv_predict
 params <- list(
