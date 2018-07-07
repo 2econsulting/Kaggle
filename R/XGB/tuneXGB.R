@@ -1,7 +1,7 @@
 # title : tuneXGB
 # author : jacob
 
-tuneXGB <- function(data, params){
+tuneXGB <- function(data, y, params){
   
   # split
   splits  <- splitFrame(dt = data, ratio = c(0.6,0.2), seed = 1234)
@@ -10,10 +10,12 @@ tuneXGB <- function(data, params){
   cat(">> number of valid:", nrow(valid))
   
   # xgb.DMatrix
-  sparse_matrix_train <- sparse.model.matrix(Survived~.-1, data = train)
-  dtrain <- xgb.DMatrix(data = sparse_matrix_train, label = train$Survived) 
-  sparse_matrix_valid <- sparse.model.matrix(Survived~.-1, data = valid)
-  dvalid <- xgb.DMatrix(data = sparse_matrix_valid, label = valid$Survived)
+  #sparse_matrix_train <- sparse.model.matrix(Survived~.-1, data = train)
+  #dtrain <- xgb.DMatrix(data = sparse_matrix_train, label = train$Survived) 
+  #sparse_matrix_valid <- sparse.model.matrix(Survived~.-1, data = valid)
+  #dvalid <- xgb.DMatrix(data = sparse_matrix_valid, label = valid$Survived)
+  dtrain <- prepXGB(data=train, y=y)
+  dvalid <- prepXGB(data=valid, y=y)
   watchlist <- list(eval = dvalid)
   
   # gridOptions
@@ -55,3 +57,18 @@ tuneXGB <- function(data, params){
   
   return(list(bstModel=bstModel, bstGrid=bstGrid))
 }
+
+# example ----
+# library(rAutoFE)
+# data(churn)
+# params <- list(
+#  max_depth = c(6, 2, 3, 4, 5, 7, 9, 11, 13),
+#  eta = c(0.3, 0.1, 0.5, 0.01, 0.03),
+#  alpha = c(0, 0.01),
+#  lambda = c(0, 0.01),
+#  subsample = c(1, 0.9),
+#  colsample_bytree = c(1, 0.9),
+#  min_child_weight = c(1, 2, 3),
+#  gamma = c(0, 1) 
+# )
+# xgb <- tuneXGB(data=churn, y="Churn.", params=params)
