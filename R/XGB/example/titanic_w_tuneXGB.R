@@ -8,6 +8,7 @@ library(Matrix)
 source('fe_titanic.R')
 source('make_submit.R')
 source('tuneXGB.R')
+source('prepXGB.R')
 source('xgb_cv_predict.R')
 
 # prepare dataset 
@@ -33,7 +34,7 @@ params <- list(
   min_child_weight = c(1, 2, 3),
   gamma = c(0, 1) 
 )
-ml_xgb <- tuneXGB(data=train, params=params)
+ml_xgb <- tuneXGB(data=train, y="Survived", params=params)
 saveRDS(ml_xgb,"./ml_xgb.Rda")
 
 # predict & submit 
@@ -51,7 +52,4 @@ p1 <- ifelse(rowMeans(output$p1)>0.5,1,0)
 make_submit(p1,"R_TEST_XGB_TUNE_CVP1")
 pred <- ifelse(rowMeans(output$pred)>0.5,1,0)
 make_submit(pred,"R_TEST_XGB_TUNE_CVPRED")
-
-
-
 
