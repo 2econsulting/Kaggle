@@ -1,6 +1,6 @@
+# title : xgb_cv_predict
+# author : jacob
 
-
-# xgb_cv_predict
 xgb_cv_predict <- function(data, test, k, y, params){
   p1 <- list()
   pred <- list()
@@ -21,13 +21,19 @@ xgb_cv_predict <- function(data, test, k, y, params){
     
     watchlist <- list(eval = dvalid)
     
-    eta <- params$eta
-    
     bst <- xgb.train(
+      list(
+        max_depth = params["max_depth"][[1]],
+        eta = params["eta"][[1]],
+        alpha = params["alpha"][[1]],
+        lambda = params["lambda"][[1]],
+        subsample = params["subsample"][[1]],
+        colsample_bytree = params["colsample_bytree"][[1]],
+        min_child_weight = params["min_child_weight"][[1]],
+        gamma = params["gamma"][[1]]
+      ),
       data = dtrain, 
       watchlist = watchlist,
-      # max.depth = 4,
-      eta = eta,
       early_stopping_rounds = 3,
       nround = 1000,
       verbose = 1,

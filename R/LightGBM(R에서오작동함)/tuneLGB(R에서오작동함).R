@@ -23,11 +23,6 @@ train <- data[data$Survived!=9999,]
 test <- data[data$Survived==9999,]
 test$Survived <- NULL
 
-
-
-
-
-
 y="Survived"
 target_idx   <- which(colnames(train)==y)
 cat_features <- which(sapply(train[,-target_idx], is.factor))
@@ -88,23 +83,5 @@ ml = lgb.train(
     num_leaves = grid_search[i, "num_leaves"]
   )
 )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
