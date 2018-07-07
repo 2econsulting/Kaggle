@@ -2,7 +2,7 @@
 # author : jacob
 
 # tuneCatBoost
-tuneCatBoost <- function(data, y, max_model, cv, gridtype="small-size"){
+tuneCatBoost <- function(data, y, max_models, cv, gridtype="small-size"){
   
   data_x <- data[, colnames(data)[colnames(data)!=y]]
   data_y <- data[, colnames(data)[colnames(data)==y]]
@@ -45,7 +45,7 @@ tuneCatBoost <- function(data, y, max_model, cv, gridtype="small-size"){
     maximize = TRUE,
     preProc = NULL,
     tuneGrid = grid, 
-    tuneLength = max_model, # max_model 
+    tuneLength = max_models, # max_models 
     trControl = fit_control
   )
   return(model)
