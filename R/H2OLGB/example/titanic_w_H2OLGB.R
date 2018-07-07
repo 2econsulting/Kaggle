@@ -68,14 +68,12 @@ cat(">> TOP2_maxdepth :", TOP2_maxdepth, "\n")
 cat(">> TOP3_maxdepth :", TOP3_maxdepth, "\n")
 
 # step[3] : search for other params 
-lgb <- tuneH2OXGB(
+lgb <- tuneH2OLGB(
   data = train, 
   y = "Survived", 
   max_models = 100, 
   max_runtime_secs = 60*60*24,
   grid_id = "lgb",
-  tree_method = "hist",
-  grow_policy = "lossguide",
   params = list(
     max_depth = c(TOP1_maxdepth, TOP2_maxdepth, TOP3_maxdepth),
     categorical_encoding = categorical_encoding,
