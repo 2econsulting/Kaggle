@@ -1,14 +1,47 @@
 
 
-setwd("~/GitHub/Kaggle/titanic/ztable")
+setwd("~/kitematic/Kaggle(home)/titanic/ztable")
+files <- list.files(pattern = "R_")
+files <- grep("TUNE", files, value = T)
 
-files <- list.files()
-files <- files[files!="README.md"]
 
 ztables <- list()
 for(i in 1:length(files)){
-  ztables[[files[i]]] <- read.csv(files[i])
+  tmp <- read.csv(files[i])
+  tmp$Survived <- ifelse(tmp$Survived>0.5,1,0)
+  ztables[[files[i]]] <- tmp
 }
+
+
+bst <- sapply(ztables,"[","Survived")
+sapply(bst, function(x) sum(x))
+
+
+pred <- sum(rowSums(do.call(cbind,bst))>2)
+PassengerId <- read.csv("../input/test.csv")$PassengerId
+output <- as.data.frame(cbind(PassengerId, pred))
+colnames(output) <- c("PassengerId", "Survived")
+write.csv(output, "../output/ensemble_v1.csv",row.names = F)
+
+pred <- sum(rowSums(do.call(cbind,bst))>3)
+PassengerId <- read.csv("../input/test.csv")$PassengerId
+output <- as.data.frame(cbind(PassengerId, pred))
+colnames(output) <- c("PassengerId", "Survived")
+write.csv(output, "../output/ensemble_v2.csv",row.names = F)
+
+
+pred <- ifelse(rowMeans(do.call(cbind,bst))>0.5,1,0)
+PassengerId <- read.csv("../input/test.csv")$PassengerId
+output <- as.data.frame(cbind(PassengerId, pred))
+colnames(output) <- c("PassengerId", "Survived")
+write.csv(output, "../output/ensemble_v3.csv",row.names = F)
+
+
+
+
+
+
+
 
 TOP1 <- ztables$R_TEST_CATBOOST_TUNE_P1.csv
 table(round(TOP1$Survived,1))
