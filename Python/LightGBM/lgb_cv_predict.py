@@ -41,11 +41,12 @@ def lgb_cv_predict(data, new_data, params, num_boost_round, num_iter, valid_prop
 ##### example #####
 ## after run "prepLGB.py" and "tuneLGB.py" example code 
 
-params['metric'] = 'binary' ## for binary classification
+best_params['metric'] = 'binary' ## for binary classification
+best_params['seed'] = 1234       ## set seed
 
 lgb_model, pred = lgb_cv_predict(data = train, 
                                  new_data = test,
-                                 params = params,  
+                                 params = best_params,  
                                  num_boost_round = 10000, 
                                  num_iter = 12,
                                  valid_prop = 0.4, 

@@ -2,8 +2,20 @@
 
 import lightgbm as lgb
 from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import train_test_split
 
-def tuneLGB(params, grid_params, objective, cv, trainData, trainLabel, isReg):
+def tuneLGB(data, target, grid_params, valid_prop, isReg, objective, params={}, eval_metric="AUC", stopping_rounds=10, cv=3):
+    trainData, validData = train_test_split(data, 
+                                            test_size=valid_prop, 
+                                            stratify=data[target], 
+                                            random_state=1)
+    
+    trainLabel = trainData[target]
+    trainData.drop(target, axis = 1, inplace = True)
+    
+    validLabel = validData[target]
+    validData.drop(target, axis = 1, inplace = True)
+    
     # check where Regression or not
     if isReg == True:
         mdl = lgb.LGBMRegressor(boosting_type= 'gbdt', 
@@ -38,7 +50,11 @@ def tuneLGB(params, grid_params, objective, cv, trainData, trainLabel, isReg):
     grid = GridSearchCV(mdl, grid_params, verbose=2, cv=cv, n_jobs=4)
     
     # Run the grid
-    grid.fit(trainData, trainLabel)
+    grid.fit(trainData, trainLabel, 
+             early_stopping_rounds=stopping_rounds,
+             eval_metric=eval_metric, 
+             eval_set=[(validData, validLabel)],
+             verbose=False)
     
     params['min_child_samples'] = grid.best_params_['min_child_samples']
     params['max_depth'] = grid.best_params_['max_depth']
@@ -78,7 +94,10 @@ best_params = tuneLGB(params = params,
                       grid_params = gridParams, 
                       objective = "binary", 
                       cv = 3, 
-                      trainData = train.drop("Survived", axis = 1), 
-                      trainLabel = train['Survived'], 
+                      valid_prop = 0.4,
+                      eval_metric = "logloss", 
+                      stopping_rounds = 10,
+                      data = train, 
+                      target = "Survived", 
                       isReg = False)
 """
