@@ -47,6 +47,7 @@ def xgb_cv_predict(data, new_data, params, num_boost_round, num_iter, valid_prop
 ## after run "prepXGB.py" and "tuneXGB.py" example code 
 
 best_params["eval_metric"] = "logloss"   ## for binary classification
+best_params['seed'] = 1234               ## set seed
 
 xgb_model, pred = xgb_cv_predict(data = train, 
                                  new_data = test,
@@ -57,5 +58,4 @@ xgb_model, pred = xgb_cv_predict(data = train,
                                  target = "Survived",
                                  early_stopping_rounds = 50)
 """
-
 
