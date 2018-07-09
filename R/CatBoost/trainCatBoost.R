@@ -14,7 +14,7 @@ trainCatBoost <- function(data, ratio = c(0.6, 0.2), y){
   train_pool <- catboost.load_pool(data = train[,-target_idx], label = train[,target_idx], cat_features = cat_features)
   valid_pool <- catboost.load_pool(data = valid[,-target_idx], label = valid[,target_idx], cat_features = cat_features)
 
-  fit_params <- list(
+  params <- list(
     loss_function = 'Logloss',
     logging_level = "Verbose",
     random_seed = 1234,
@@ -23,7 +23,7 @@ trainCatBoost <- function(data, ratio = c(0.6, 0.2), y){
     use_best_model = T
   )
   
-  ml_cat <- catboost.train(learn_pool = train_pool, test_pool = valid_pool, params = fit_params)
+  ml_cat <- catboost.train(learn_pool = train_pool, test_pool = valid_pool, params = params)
   
   return(ml_cat)
 }

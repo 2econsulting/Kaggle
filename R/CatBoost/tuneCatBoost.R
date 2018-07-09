@@ -11,7 +11,8 @@ tuneCatBoost <- function(data, y, max_models, cv, gridtype="small-size"){
     method = "repeatedcv", 
     number = cv, 
     search = "random",
-    classProbs = TRUE
+    classProbs = TRUE,
+    seeds = 1234
   )
   
   if(gridtype=="small-size"){

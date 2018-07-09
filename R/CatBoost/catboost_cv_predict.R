@@ -21,6 +21,7 @@ catboost_cv_predict <- function(data, test, k, y, params, train_dir){
     valid_pool <- catboost.load_pool(data = valid[,-target_idx], label = valid[,target_idx], cat_features = cat_features)
     
     params$train_dir <- train_dir
+    params$random_seed <- 1234
     
     ml_cat <- catboost.train(
       learn_pool = train_pool, 
