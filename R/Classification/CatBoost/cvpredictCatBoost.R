@@ -72,7 +72,7 @@ cvpredictCatBoost <- function(data, test, k, y, params){
   cat(">> cvpredict_score : ", cvpredict_score, "\n")
   pred = expm1(rowMeans(do.call(cbind, Kpreds)))
   
-  return(list(pred=pred, cvpredict_score=cvpredict_score, crossvalidation_score=crossvalidation_score))
+  return(list(ztable=opreds, pred=pred, cvpredict_score=cvpredict_score, crossvalidation_score=crossvalidation_score))
 }
 
 
