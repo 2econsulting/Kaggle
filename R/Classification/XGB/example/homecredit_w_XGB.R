@@ -20,6 +20,10 @@ data = fread('~/Kaggle/homecredit/input/homecredit_data.csv')
 test = fread('~/Kaggle/homecredit/input/homecredit_test.csv')
 sample = fread('~/Kaggle/homecredit/input/sample_submission.csv')
 
+# sampling
+data <- head(data, round(nrow(data)*0.1))
+test <- head(test, round(nrow(test)*0.1))
+
 # ..
 data$SK_ID_CURR <- NULL
 test$SK_ID_CURR <- NULL
@@ -50,7 +54,7 @@ params <- expand.grid(
   min_child_weight = c(20, 1, 2, 3, 5, 10, 15, 40),
   lambda  = c(1, 2, 3)
 )
-optimalParams <- tuneXGB(data, y="TARGET", params=params, cv=5, max_model=3)
+optimalParams <- tuneXGB(data, y="TARGET", params=params, cv=5, max_model=100)
 optimalParams$scores
 
 
@@ -59,7 +63,7 @@ optimalParams$scores
 # ------------------------
 source('../cvpredictXGB.R')
 params = as.list(head(optimalParams$scores[names(params)],1))
-output <- cvpredictXGB(data, test, k=5, y="TARGET", params=params)
+output <- cvpredictXGB(data, test, k=10, y="TARGET", params=params)
 output$crossvalidation_score
 output$cvpredict_score
 

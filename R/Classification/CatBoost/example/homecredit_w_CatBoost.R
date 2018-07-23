@@ -20,6 +20,10 @@ data = fread('~/Kaggle/homecredit/input/homecredit_data.csv')
 test = fread('~/Kaggle/homecredit/input/homecredit_test.csv')
 sample = fread('~/Kaggle/homecredit/input/sample_submission.csv')
 
+# sampling
+data <- head(data, round(nrow(data)*0.1))
+test <- head(test, round(nrow(test)*0.1))
+
 # ..
 data$SK_ID_CURR <- NULL
 test$SK_ID_CURR <- NULL
@@ -43,7 +47,7 @@ params <- expand.grid(
   rsm = 1,
   l2_leaf_reg = 3
 )
-optimalDepthRange <- tuneCatBoost(data, y="TARGET", max_model=nrow(params), cv=3, grid=params)
+optimalDepthRange <- tuneCatBoost(data, y="TARGET", max_model=nrow(params), cv=5, grid=params)
 optimalDepthRange$results
 
 
@@ -58,7 +62,7 @@ params <- expand.grid(
   border_count = c(32, 64, 128),
   iterations = 1000
 )
-optimalParams <- tuneCatBoost(data, y="TARGET", max_model=5, cv=3, grid=params)
+optimalParams <- tuneCatBoost(data, y="TARGET", grid=params, cv=5, max_model=100)
 optimalParams$results
 
 
@@ -67,7 +71,7 @@ optimalParams$results
 # ------------------------
 source("../cvpredictCatBoost.R")
 params <- as.list(optimalParams$bestTune)
-output = cvpredictCatBoost(data, test, k=3, y="TARGET", params=params)
+output = cvpredictCatBoost(data, test, k=10, y="TARGET", params=params)
 output$cvpredict_score
 output$crossvalidation_score
 

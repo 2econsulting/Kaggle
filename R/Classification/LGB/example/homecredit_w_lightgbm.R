@@ -20,6 +20,10 @@ data = fread('~/Kaggle/homecredit/input/will/will_train.csv')
 test = fread('~/Kaggle/homecredit/input/will/will_test.csv')
 sample = fread('~/Kaggle/homecredit/input/will/sample_submission.csv')
 
+# sampling
+data <- head(data, round(nrow(data)*0.1))
+test <- head(test, round(nrow(test)*0.1))
+
 # ..
 data$SK_ID_CURR <- NULL
 test$SK_ID_CURR <- NULL
@@ -38,7 +42,7 @@ test[is.na(test)] <- 0
 params <- expand.grid(
   max_depth = c(-1, 2, 3, 4, 5, 6, 7, 8, 9)
 )
-optimalDepthRange <- tuneLGB(data, y="TARGET", params=params, cv=3, max_model=nrow(params))
+optimalDepthRange <- tuneLGB(data, y="TARGET", params=params, cv=5, max_model=nrow(params))
 optimalDepthRange$scores
 
 
@@ -52,7 +56,7 @@ params <- expand.grid(
   colsample_bytree = c(1, 0.9, 0.8, 0.7, 0.6), 
   min_child_samples = c(20, 1, 2, 3, 5, 10, 15, 40)
 )
-optimalParams <- tuneLGB(data, y="TARGET", params=params, cv=5, max_model=3)
+optimalParams <- tuneLGB(data, y="TARGET", params=params, cv=5, max_model=100)
 optimalParams$scores
 
 
@@ -60,7 +64,7 @@ optimalParams$scores
 # cvpredict catboost 
 # ------------------------
 params = as.list(head(optimalParams$scores[names(params)],1))
-output <- cvpredictLGB(data, test, k=5, y="TARGET", params=params)
+output <- cvpredictLGB(data, test, k=10, y="TARGET", params=params)
 output$crossvalidation_score
 output$cvpredict_score
 
