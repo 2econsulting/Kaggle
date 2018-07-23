@@ -15,14 +15,27 @@ library(catboost)
 source("../tuneCatBoost.R")
 source("../cvpredictCatBoost.R")
 
+# path 
+path_input = "~/Kaggle/homecredit/input/"
+path_output = "~/Kaggle/homecredit/output/" 
+path_ztable = "~/Kaggle/homecredit/ztable/" 
+
+# output file
+file_ztable = "ztableCAT_w_will.csv"
+file_sub = "sub_w_cat.csv"
+
+# set y 
+y = "TARGET"
+
 # read data
-data = fread('~/Kaggle/homecredit/input/homecredit_data.csv')
-test = fread('~/Kaggle/homecredit/input/homecredit_test.csv')
-sample = fread('~/Kaggle/homecredit/input/sample_submission.csv')
+data = fread(file.path(path_input,'will/will_train.csv'))
+test = fread(file.path(path_input,'will/will_test.csv'))
+sub = fread(file.path(path_input,'will/sample_submission.csv'))
 
 # sampling
-data <- head(data, round(nrow(data)*0.1))
-test <- head(test, round(nrow(test)*0.1))
+# data <- head(data, round(nrow(data)*0.01))
+# test <- head(test, round(nrow(test)*0.01))
+# sub <- head(sub, round(nrow(sub)*0.01))
 
 # ..
 data$SK_ID_CURR <- NULL
@@ -34,11 +47,9 @@ data[, (names) := lapply(.SD, as.numeric), .SDcols = names]
 data[is.na(data)] <- 0
 test[is.na(test)] <- 0
 
-
 # ------------------------
 #  optimal Depth Range
 # ------------------------
-source("../tuneCatBoost.R")
 params <- expand.grid(
   depth = c(2, 3, 4, 5, 6, 7, 8, 9),
   learning_rate = 0.03, 
@@ -47,9 +58,8 @@ params <- expand.grid(
   rsm = 1,
   l2_leaf_reg = 3
 )
-optimalDepthRange <- tuneCatBoost(data, y="TARGET", max_model=nrow(params), cv=5, grid=params)
+optimalDepthRange <- tuneCatBoost(data, y=y, max_model=nrow(params), cv=5, grid=params)
 optimalDepthRange$results
-
 
 # ------------------------
 # optimal hyper-params
@@ -62,24 +72,19 @@ params <- expand.grid(
   border_count = c(32, 64, 128),
   iterations = 1000
 )
-optimalParams <- tuneCatBoost(data, y="TARGET", grid=params, cv=5, max_model=100)
+optimalParams <- tuneCatBoost(data, y=y, grid=params, cv=5, max_model=100)
 optimalParams$results
-
 
 # ------------------------
 # cvpredict catboost 
 # ------------------------
-source("../cvpredictCatBoost.R")
 params <- as.list(optimalParams$bestTune)
-output = cvpredictCatBoost(data, test, k=10, y="TARGET", params=params)
+output = cvpredictCatBoost(data, test, k=10, y=y, params=params)
 output$cvpredict_score
 output$crossvalidation_score
 
 # ztable and submit
-fwrite(data.frame(ztable=output$ztable), '~/Kaggle/homecredit/ztable/ztableCAT_w_will.csv')
-sample$TARGET <- output$pred
-sample$TARGET[which(sample$TARGET>1)] <- 1
-fwrite(sample, paste0("~/Kaggle/homecredit/output/sub_w_cat",sample(100,1),".csv"))
-
-
+fwrite(data.frame(ztable=output$ztable), paste0(path_ztable,file_ztable))
+sub[,y] <- ifelse(output$pred>1,1,output$pred)
+fwrite(sub, paste0(path_output,file_sub))
 

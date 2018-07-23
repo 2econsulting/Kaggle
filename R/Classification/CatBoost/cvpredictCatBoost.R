@@ -29,6 +29,7 @@ cvpredictCatBoost <- function(data, test, k, y, params){
   params$random_seed <- 1
   params$loss_function <- 'Logloss'
   params$eval_metric <- 'Logloss'  # Accuracy, AUC, Logloss
+  params$od_type = "Iter"
   
   set.seed(1)
   KFolds <- createFolds(1:nrow(data), k = k, list = TRUE, returnTrain = FALSE)

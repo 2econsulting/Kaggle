@@ -62,7 +62,7 @@ tuneCatBoost <- function(data, y, max_model, cv, grid){
 
 fit <- function (x, y, wts, param, lev, last, weights, classProbs, ...){
   
-  param <- c(param, list(...), list(random_seed=1))
+  param <- c(param, list(...), list(random_seed=1,od_type = "Iter"))
   if (is.null(param$loss_function)) {
     param$loss_function = "RMSE"
     if (is.factor(y)) {
