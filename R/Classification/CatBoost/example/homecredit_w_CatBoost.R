@@ -1,6 +1,5 @@
 # title : homecredit_w_CatBoost
 # author : jacob
-# parms : https://tech.yandex.com/catboost/doc/dg/concepts/r-reference_catboost-train-docpage/
 
 # library 
 setwd("~/GitHub/2econsulting/Kaggle/R/Classification/CatBoost/example/")

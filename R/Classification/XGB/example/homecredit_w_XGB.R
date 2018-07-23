@@ -1,6 +1,5 @@
 # title : homecredit_w_XGB 
 # authro : jacob 
-# params : https://xgboost.readthedocs.io/en/latest/parameter.html
 
 # library 
 setwd("~/GitHub/2econsulting/Kaggle/R/Classification/XGB/example/")

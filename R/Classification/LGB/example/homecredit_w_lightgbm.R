@@ -1,6 +1,5 @@
 # title : homecredit_w_lightgbm
 # author : jacob
-# params : https://lightgbm.readthedocs.io/en/latest/Parameters-Tuning.html
 
 # library 
 setwd("~/GitHub/2econsulting/Kaggle/R/Classification/LGB/example")
