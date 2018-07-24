@@ -28,9 +28,14 @@ cvpredictCatBoost <- function(data, test, k, y, params){
   params$use_best_model <- TRUE
   params$random_seed <- 1
   params$loss_function <- 'Logloss'
-  params$eval_metric <- 'Logloss'  # Accuracy, AUC, Logloss
+  params$eval_metric <- 'AUC'  
   params$od_type = "Iter"
+  params$od_wait = 20
   
+  # make x and y 
+  data_y <- data[,y]
+  data_x <- data[,which(colnames(data)!=y)]
+
   set.seed(1)
   KFolds <- createFolds(1:nrow(data), k = k, list = TRUE, returnTrain = FALSE)
   
@@ -43,11 +48,11 @@ cvpredictCatBoost <- function(data, test, k, y, params){
     valid_idx = unlist(KFolds[i])
     
     if(sum(sapply(data[,-target_idx], function(x) is.factor(x)))>0){
-      train_pool <- catboost.load_pool(data = data[train_idx,][,-target_idx], label = data[train_idx,][,target_idx], cat_features = cat_features)
-      valid_pool <- catboost.load_pool(data = data[valid_idx,][,-target_idx], label = data[valid_idx,][,target_idx], cat_features = cat_features)
+      train_pool <- catboost.load_pool(data = data_x[train_idx,], label = data_y[train_idx], cat_features = cat_features)
+      valid_pool <- catboost.load_pool(data = data_x[valid_idx,], label = data_y[valid_idx], cat_features = cat_features)
     }else{
-      train_pool <- catboost.load_pool(data = data[train_idx,][,-target_idx], label = data[train_idx,][,target_idx])
-      valid_pool <- catboost.load_pool(data = data[valid_idx,][,-target_idx], label = data[valid_idx,][,target_idx])
+      train_pool <- catboost.load_pool(data = data_x[train_idx,], label = data_y[train_idx])
+      valid_pool <- catboost.load_pool(data = data_x[valid_idx,], label = data_y[valid_idx])
     }
     
     ml_cat <- catboost.train(
@@ -57,20 +62,20 @@ cvpredictCatBoost <- function(data, test, k, y, params){
     )
     
     opreds[valid_idx] = catboost.predict(ml_cat, valid_pool, prediction_type="Probability")
-    score[[i]] = auc(data[valid_idx,][,target_idx], opreds[valid_idx])
+    score[[i]] = auc(data_y[valid_idx], opreds[valid_idx])
     
-    if(sum(sapply(data[,-target_idx], function(x) is.factor(x)))>0){
+    if(sum(sapply(data_x, function(x) is.factor(x)))>0){
       test_pool <- catboost.load_pool(data = test, cat_features = cat_features)
     }else{
       test_pool <- catboost.load_pool(data = test)
     }
     
     Kpreds[[i]] = catboost.predict(ml_cat, test_pool, prediction_type="Probability") 
-    cat(">> crossvalidation_score :", score[[i]], "\n")
+    cat(">> crossvalidation_score(AUC) :", score[[i]], "\n")
   }
   crossvalidation_score = do.call(rbind, score)
-  cvpredict_score = auc(data[,target_idx], opreds)
-  cat(">> cvpredict_score : ", cvpredict_score, "\n")
+  cvpredict_score = auc(data_y, opreds)
+  cat(">> cvpredict_score(AUC) : ", cvpredict_score, "\n")
   pred = expm1(rowMeans(do.call(cbind, Kpreds)))
   
   return(list(ztable=opreds, pred=pred, cvpredict_score=cvpredict_score, crossvalidation_score=crossvalidation_score))

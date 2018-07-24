@@ -2,7 +2,6 @@
 # author : jacob
 
 # library 
-setwd("~/GitHub/2econsulting/Kaggle/R/Classification/LGB/example")
 options(scipen = 999)
 rm(list=ls())
 gc(reset=TRUE)
@@ -12,30 +11,35 @@ library(e1071)
 library(caret)
 library(Metrics)
 library(lightgbm)
-source("../tuneLGB.R")
-source("../cvpredictLGB.R")
 
-# path 
+# tuning code
+path_code = "~/GitHub/2econsulting/Kaggle/R/Classification/LGB/"
+source(file.path(path_code,"tuneLGB.R"))
+source(file.path(path_code,"cvpredictLGB.R"))
+
+# set input files 
 path_input = "~/Kaggle/homecredit/input/"
-path_output = "~/Kaggle/homecredit/output/" 
-path_ztable = "~/Kaggle/homecredit/ztable/" 
+file_data = 'will/will_train.csv'
+file_test = 'will/will_test.csv'
+file_submit  = 'will/sample_submission.csv'
 
-# output file
+# set output files
+path_output = "~/Kaggle/homecredit/output/" 
 file_ztable = "ztableLGB_w_will.csv"
-file_sub = "sub_w_lgb.csv"
+file_pred = "pred_w_lgb.csv"
 
 # set y 
 y = "TARGET"
 
 # read data
-data = fread(file.path(path_input,'will/will_train.csv'))
-test = fread(file.path(path_input,'will/will_test.csv'))
-sub = fread(file.path(path_input,'will/sample_submission.csv'))
+data = fread(file.path(path_input, file_data))
+test = fread(file.path(path_input, file_test))
+submit = fread(file.path(path_input, file_submit))
 
 # sampling
 # data <- head(data, round(nrow(data)*0.01))
 # test <- head(test, round(nrow(test)*0.01))
-# sub <- head(sub, round(nrow(sub)*0.01))
+# submit <- head(submit, round(nrow(submit)*0.01))
 
 # ..
 data$SK_ID_CURR <- NULL
@@ -79,7 +83,7 @@ output$crossvalidation_score
 output$cvpredict_score
 
 # ztable and submit
-fwrite(data.frame(ztable=output$ztable), paste0(path_ztable,file_ztable))
-sub[,y] <- ifelse(output$pred>1,1,output$pred)
-fwrite(sub, paste0(path_output,file_sub))
+fwrite(data.frame(ztable=output$ztable), paste0(path_output, file_ztable))
+submit[,y] <- ifelse(output$pred>1, 1, output$pred)
+fwrite(submit, paste0(path_output, file_pred))
 

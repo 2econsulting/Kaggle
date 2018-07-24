@@ -2,7 +2,6 @@
 # author : jacob
 
 # library 
-setwd("~/GitHub/2econsulting/Kaggle/R/Classification/CatBoost/example/")
 options(scipen = 999)
 rm(list=ls())
 gc(reset=TRUE)
@@ -12,30 +11,35 @@ library(data.table)
 library(e1071)
 library(Metrics)
 library(catboost)
-source("../tuneCatBoost.R")
-source("../cvpredictCatBoost.R")
 
-# path 
+# tuning code
+path_code = "~/GitHub/2econsulting/Kaggle/R/Classification/CatBoost/"
+source(file.path(path_code,"tuneCatBoost.R"))
+source(file.path(path_code,"cvpredictCatBoost.R"))
+
+# set input files 
 path_input = "~/Kaggle/homecredit/input/"
-path_output = "~/Kaggle/homecredit/output/" 
-path_ztable = "~/Kaggle/homecredit/ztable/" 
+file_data = 'will/will_train.csv'
+file_test = 'will/will_test.csv'
+file_submit  = 'will/sample_submission.csv'
 
-# output file
+# set output files
+path_output = "~/Kaggle/homecredit/output/" 
 file_ztable = "ztableCAT_w_will.csv"
-file_sub = "sub_w_cat.csv"
+file_pred = "pred_w_cat.csv"
 
 # set y 
 y = "TARGET"
 
 # read data
-data = fread(file.path(path_input,'will/will_train.csv'))
-test = fread(file.path(path_input,'will/will_test.csv'))
-sub = fread(file.path(path_input,'will/sample_submission.csv'))
+data = fread(file.path(path_input, file_data))
+test = fread(file.path(path_input, file_test))
+submit = fread(file.path(path_input, file_submit))
 
 # sampling
 # data <- head(data, round(nrow(data)*0.01))
 # test <- head(test, round(nrow(test)*0.01))
-# sub <- head(sub, round(nrow(sub)*0.01))
+# submit <- head(submit, round(nrow(submit)*0.01))
 
 # ..
 data$SK_ID_CURR <- NULL
@@ -44,47 +48,41 @@ names <- which(sapply(data, class) != "numeric")
 data[, (names) := lapply(.SD, as.numeric), .SDcols = names]
 
 # missing value
-data[is.na(data)] <- 0
-test[is.na(test)] <- 0
+data[is.na(data)] <- -9999
+test[is.na(test)] <- -9999
 
 # ------------------------
 #  optimal Depth Range
 # ------------------------
 params <- expand.grid(
-  depth = c(2, 3, 4, 5, 6, 7, 8, 9),
-  learning_rate = 0.03, 
-  iterations = 1000,
-  border_count = 128,
-  rsm = 1,
-  l2_leaf_reg = 3
+  depth = c(2, 3, 4, 5, 6, 7, 8, 9)
 )
-optimalDepthRange <- tuneCatBoost(data, y=y, max_model=nrow(params), cv=5, grid=params)
-optimalDepthRange$results
+optimalDepthRange <- tuneCatBoost(data, y=y, k=5, params=params, max_model=nrow(params))
+optimalDepthRange$scores
 
 # ------------------------
 # optimal hyper-params
 # ------------------------
 params <- expand.grid(
-  depth = head(optimalDepthRange$results$depth,3),
+  depth = head(optimalDepthRange$scores$depth,3),
   learning_rate = c(0.3, 0.1, 0.05, 0.01),
   l2_leaf_reg = c(3 ,1, 2 ,6),
   rsm = c(1, 0.9, 0.8, 0.7, 0.6),
-  border_count = c(32, 64, 128),
-  iterations = 1000
+  border_count = c(32, 64, 128)
 )
-optimalParams <- tuneCatBoost(data, y=y, grid=params, cv=5, max_model=100)
-optimalParams$results
+optimalParams <- tuneCatBoost(data, y=y, k=5, params=params, max_model=100)
+optimalParams$scores
 
 # ------------------------
 # cvpredict catboost 
 # ------------------------
-params <- as.list(optimalParams$bestTune)
+params = as.list(head(optimalParams$scores[names(params)],1))
 output = cvpredictCatBoost(data, test, k=10, y=y, params=params)
 output$cvpredict_score
 output$crossvalidation_score
 
 # ztable and submit
-fwrite(data.frame(ztable=output$ztable), paste0(path_ztable,file_ztable))
-sub[,y] <- ifelse(output$pred>1,1,output$pred)
-fwrite(sub, paste0(path_output,file_sub))
+fwrite(data.frame(ztable=output$ztable), paste0(path_output, file_ztable))
+submit[,y] <- ifelse(output$pred>1, 1, output$pred)
+fwrite(submit, paste0(path_output, file_pred))
 
