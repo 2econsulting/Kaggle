@@ -3,7 +3,7 @@
 
 cvpredictLGB <- function(data, test, k, y, params){
   
-  if(k<3) stop(">> k > 3! \n")
+  if(k<2) stop(">> k is very small \n")
   require(caret)
   require(Metrics)
   
@@ -58,7 +58,7 @@ cvpredictLGB <- function(data, test, k, y, params){
       verbosity = -1, # verbose verbosity
       record = TRUE,
       eval_freq = 10,
-      num_threads = 8,
+      num_threads = detectCores(logical=F),
       early_stopping_rounds = 10
     )
     

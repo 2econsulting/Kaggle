@@ -1,8 +1,9 @@
 # title : tuneXGB
 # author : jacob
 
-tuneXGB <- function(data, y, params, cv, max_model=NULL){
+tuneXGB <- function(data, y, params, k, max_model=NULL){
   
+  if(k<2) stop(">> k is very small \n")
   require(Matrix)
   require(xgboost)  
   
@@ -42,11 +43,10 @@ tuneXGB <- function(data, y, params, cv, max_model=NULL){
       objective = "binary:logistic",
       nrounds = 1000, 
       early_stopping_rounds = 10,
-      nthread = 1,
-      #debug_verbose = 1,
+      nthread = detectCores(logical=F),
       tree_method = "hist",
       grow_policy = "lossguide",
-      nfold = cv, 
+      nfold = k, 
       stratified = TRUE, 
       params = as.list(sapply(as.list(params),"[",i)),
       prediction = TRUE # cvpredict 

@@ -1,8 +1,9 @@
 # title : tuneLGM
 # author : jacob
 
-tuneLGB <- function(data, y, params, cv, max_model=NULL){
+tuneLGB <- function(data, y, params, k, max_model=NULL){
   
+  if(k<2) stop(">> k is very small \n")
   require(Matrix)
   require(lightgbm)  
   
@@ -45,11 +46,11 @@ tuneLGB <- function(data, y, params, cv, max_model=NULL){
       objective = "binary",
       eval = "auc", # binary_logloss
       nrounds = 1000,
-      nfold = cv,
+      nfold = k,
       verbosity = -1,
       record = TRUE,
       eval_freq = 10,
-      num_threads = 8,
+      num_threads = detectCores(logical=F),
       early_stopping_rounds = 10
     )
     output$scores[i] <- ml_lgb$best_score

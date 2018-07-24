@@ -3,7 +3,7 @@
 
 cvpredictXGB <- function(data, test, k, y, params){
   
-  if(k<3) stop(">> k > 3! \n")
+  if(k<2) stop(">> k is very small \n")
   require(caret)
   require(Metrics)
   
@@ -55,8 +55,7 @@ cvpredictXGB <- function(data, test, k, y, params){
       objective = "binary:logistic",
       nround = 1000, 
       early_stopping_rounds = 10,
-      nthread = 1,
-      #debug_verbose = 1,
+      nthread = detectCores(logical=F),
       tree_method = "hist",
       grow_policy = "lossguide",
       params = params

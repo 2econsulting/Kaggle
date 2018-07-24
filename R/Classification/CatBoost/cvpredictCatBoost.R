@@ -3,7 +3,7 @@
 
 cvpredictCatBoost <- function(data, test, k, y, params){
   
-  if(k<3) stop(">> k > 3! \n")
+  if(k<2) stop(">> k is very small \n")
   require(caret)
   require(Metrics)
   
@@ -30,7 +30,8 @@ cvpredictCatBoost <- function(data, test, k, y, params){
   params$loss_function <- 'Logloss'
   params$eval_metric <- 'AUC'  
   params$od_type = "Iter"
-  params$od_wait = 20
+  params$od_wait = 100
+  params$thread_count = detectCores(logical=F)
   
   # make x and y 
   data_y <- data[,y]
