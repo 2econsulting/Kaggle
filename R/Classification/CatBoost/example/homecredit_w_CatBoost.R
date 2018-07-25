@@ -71,7 +71,7 @@ optimalParams <- tuneCatBoost(head(data, sample_num), y=y, k=kfolds, params=para
 # cvpredict catboost 
 # ------------------------
 params = as.list(head(optimalParams$scores[names(params)],1))
-output <- cvpredictLGB(data, test, k=kfolds*2, y=y, params=params)
+output <- cvpredictCatBoost(data, test, k=kfolds*2, y=y, params=params)
 cat(">> cv_score :", output$cvpredict_score)
 
 # save param
