@@ -52,14 +52,15 @@ names <- which(sapply(data, class) != "numeric")
 data[, (names) := lapply(.SD, as.numeric), .SDcols = names]
 
 # ..
-data[is.na(data)] <- -9999
-test[is.na(test)] <- -9999
+# data[is.na(data)] <- -9999
+# test[is.na(test)] <- -9999
 
 # ------------------------
 #  optimal Depth Range
 # ------------------------
 params <- expand.grid(
-  max_depth = c(-1, 2, 3, 4, 5, 6, 7, 8, 9)
+  max_depth = c(-1, 2, 3, 4, 5, 6, 7, 8, 9),
+  learning_rate = 0.1
 )
 optimalDepthRange <- tuneLGB(head(data, sample_num), y=y, params=params, k=kfolds, max_model=nrow(params))
 

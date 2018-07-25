@@ -51,15 +51,16 @@ test$SK_ID_CURR <- NULL
 names <- which(sapply(data, class) != "numeric")
 data[, (names) := lapply(.SD, as.numeric), .SDcols = names]
 
-# missing value
-data[is.na(data)] <- -9999
-test[is.na(test)] <- -9999
+# ..
+# data[is.na(data)] <- -9999
+# test[is.na(test)] <- -9999
 
 # ------------------------
 #  optimal Depth Range
 # ------------------------
 params <- expand.grid(
-  depth = c(2, 3, 4, 5, 6, 7, 8, 9)
+  depth = c(2, 3, 4, 5, 6, 7, 8, 9),
+  learning_rate = 0.1
 )
 optimalDepthRange <- tuneCatBoost(data=head(data, sample_num), y=y, k=kfolds, params=params, max_model=nrow(params))
 

@@ -8,6 +8,10 @@ tuneLGB <- function(data, y, params, k, max_model=NULL){
   require(lightgbm)  
   
   data <- as.data.frame(data)
+  
+  # shuffle params
+  set.seed(1)
+  params = params[sample(nrow(params)),]
 
   # convert char to factor(no need if use lgb.prepare_rules)
   

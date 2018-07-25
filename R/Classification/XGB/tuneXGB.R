@@ -9,6 +9,10 @@ tuneXGB <- function(data, y, params, k, max_model=NULL){
   
   data <- as.data.frame(data)
   
+  # shuffle params
+  set.seed(1)
+  params = params[sample(nrow(params)),]
+  
   # convert char to factor
   if(sum(sapply(data, function(x) is.character(x)))>0){
     char_idx <- which(sapply(data, function(x) is.character(x)))
