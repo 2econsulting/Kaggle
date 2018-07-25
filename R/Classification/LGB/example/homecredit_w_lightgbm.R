@@ -17,16 +17,9 @@ path_code = "~/GitHub/2econsulting/Kaggle/R/Classification/LGB"
 source(file.path(path_code,"tuneLGB.R"))
 source(file.path(path_code,"cvpredictLGB.R"))
 
-# set input files 
+# set path 
 path_input = "~/Kaggle/homecredit/input"
-file_data = 'will/will_train.csv'
-file_test = 'will/will_test.csv'
-file_submit  = 'will/sample_submission.csv'
-
-# set output files
 path_output = "~/Kaggle/homecredit/output" 
-file_ztable = "ztableLGB_w_will.csv"
-file_pred = "pred_w_lgb.csv"
 
 # .. 
 y = "TARGET"
@@ -36,13 +29,12 @@ sample_rate = 0.001
 kfolds = 2
 
 # read data
-data = fread(file.path(path_input, file_data))
-test = fread(file.path(path_input, file_test))
-submit = fread(file.path(path_input, file_submit))
+data = fread(file.path(path_input, 'will/will_train.csv'))
+test = fread(file.path(path_input, 'will/will_test.csv'))
+submit = fread(file.path(path_input, 'will/will_test.csv'))
 
 # sampling
 set.seed(1)
-data <- data[sample(nrow(data)),]
 sample_num =round(nrow(data)*sample_rate)
 
 # ..
@@ -51,16 +43,11 @@ test$SK_ID_CURR <- NULL
 names <- which(sapply(data, class) != "numeric")
 data[, (names) := lapply(.SD, as.numeric), .SDcols = names]
 
-# ..
-# data[is.na(data)] <- -9999
-# test[is.na(test)] <- -9999
-
 # ------------------------
 #  optimal Depth Range
 # ------------------------
 params <- expand.grid(
-  max_depth = c(-1, 2, 3, 4, 5, 6, 7, 8, 9),
-  learning_rate = 0.1
+  max_depth = c(-1, 2, 3, 4, 5, 6, 7, 8, 9)
 )
 optimalDepthRange <- tuneLGB(head(data, sample_num), y=y, params=params, k=kfolds, max_model=nrow(params))
 

@@ -10,8 +10,16 @@ tuneLGB <- function(data, y, params, k, max_model=NULL){
   data <- as.data.frame(data)
   
   # shuffle params
-  set.seed(1)
-  params = params[sample(nrow(params)),]
+  if(ncol(params)==1){
+    params = params
+    cat(">> cartesian grid search, params not shuffled! \n")
+    Sys.sleep(3)
+  }else{
+    set.seed(1)
+    params = params[sample(nrow(params)),]
+    cat(">> random grid search, params shuffled! \n")
+    Sys.sleep(3)
+  }
 
   # convert char to factor(no need if use lgb.prepare_rules)
   

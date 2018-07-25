@@ -35,7 +35,6 @@ submit = fread(file.path(path_input, 'will/will_test.csv'))
 
 # sampling
 set.seed(1)
-data <- data[sample(nrow(data)),]
 sample_num =round(nrow(data)*sample_rate)
 
 # ..
@@ -50,8 +49,7 @@ test$SK_ID_CURR <- NULL
 #  optimal Depth Range
 # ------------------------
 params <- expand.grid(
-  max_depth =  c(2, 3, 4, 5, 6, 7, 8, 9),
-  learning_rate = 0.1
+  max_depth =  c(2, 3, 4, 5, 6, 7, 8, 9)
 )
 optimalDepthRange <- tuneXGB(head(data, sample_num), y=y, params=params, k=kfolds, max_model=nrow(params))
 

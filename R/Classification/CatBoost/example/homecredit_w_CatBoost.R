@@ -17,16 +17,9 @@ path_code = "~/GitHub/2econsulting/Kaggle/R/Classification/CatBoost/"
 source(file.path(path_code,"tuneCatBoost.R"))
 source(file.path(path_code,"cvpredictCatBoost.R"))
 
-# set input files 
+# set path 
 path_input = "~/Kaggle/homecredit/input"
-file_data = 'will/will_train.csv'
-file_test = 'will/will_test.csv'
-file_submit  = 'will/sample_submission.csv'
-
-# set output files
 path_output = "~/Kaggle/homecredit/output" 
-file_ztable = "ztableCAT_w_will.csv"
-file_pred = "pred_w_cat.csv"
 
 # .. 
 y = "TARGET"
@@ -36,13 +29,12 @@ sample_rate = 0.001
 kfolds = 2
 
 # read data
-data = fread(file.path(path_input, file_data))
-test = fread(file.path(path_input, file_test))
-submit = fread(file.path(path_input, file_submit))
+data = fread(file.path(path_input, 'will/will_train.csv'))
+test = fread(file.path(path_input, 'will/will_test.csv'))
+submit = fread(file.path(path_input, 'will/will_test.csv'))
 
 # sampling
 set.seed(1)
-data <- data[sample(nrow(data)),]
 sample_num =round(nrow(data)*sample_rate)
 
 # ..
@@ -51,18 +43,17 @@ test$SK_ID_CURR <- NULL
 names <- which(sapply(data, class) != "numeric")
 data[, (names) := lapply(.SD, as.numeric), .SDcols = names]
 
-# ..
-# data[is.na(data)] <- -9999
-# test[is.na(test)] <- -9999
+# na NOT allowed in catboost
+data[is.na(data)] <- -9999
+test[is.na(test)] <- -9999
 
 # ------------------------
 #  optimal Depth Range
 # ------------------------
 params <- expand.grid(
-  depth = c(2, 3, 4, 5, 6, 7, 8, 9),
-  learning_rate = 0.1
+  depth = c(2, 3, 4, 5, 6, 7, 8, 9)
 )
-optimalDepthRange <- tuneCatBoost(data=head(data, sample_num), y=y, k=kfolds, params=params, max_model=nrow(params))
+optimalDepthRange <- tuneCatBoost(head(data, sample_num), y=y, k=kfolds, params=params, max_model=nrow(params))
 
 # ------------------------
 # optimal hyper-params

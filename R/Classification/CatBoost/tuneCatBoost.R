@@ -10,8 +10,16 @@ tuneCatBoost <- function(data, y, k, max_model, params){
   data <- as.data.frame(data)
   
   # shuffle params
-  set.seed(1)
-  params = params[sample(nrow(params)),]
+  if(ncol(params)==1){
+    params = params
+    cat(">> cartesian grid search, params not shuffled! \n")
+    Sys.sleep(3)
+  }else{
+    set.seed(1)
+    params = params[sample(nrow(params)),]
+    cat(">> random grid search, params shuffled! \n")
+    Sys.sleep(3)
+  }
   
   # convert char to factor
   if(sum(sapply(data, function(x) is.character(x)))>0){
@@ -25,7 +33,7 @@ tuneCatBoost <- function(data, y, k, max_model, params){
   }else{
     max_model <- nrow(params)
   }
-  
+
   if(nrow(params)<max_model) stop(">> max_model is lower than nrow(params) \n")
   
   output <- list()
@@ -46,14 +54,14 @@ catboost_cv <- function(data, y, params, k){
   # make x and y 
   data_y <- data[,y]
   data_x <- data[,which(colnames(data)!=y)]
-  
+
   # ...
   target_idx <- which(colnames(data)==y)
   cat_features <- which(sapply(data[,-target_idx], is.factor))
-  
+
   set.seed(1)
   KFolds <- createFolds(1:nrow(data), k = k, list = TRUE, returnTrain = FALSE)
-  
+
   opreds <- rep(NA, nrow(data))
   score  <- list()
   for(i in 1:k){
@@ -68,15 +76,10 @@ catboost_cv <- function(data, y, params, k){
 
     train_idx = unlist(KFolds[-i])
     valid_idx = unlist(KFolds[i])
-    
-    if(sum(sapply(data_x, function(x) is.factor(x)))>0){
-      train_pool <- catboost.load_pool(data = data_x[train_idx,], label = data_y[train_idx], cat_features = cat_features)
-      valid_pool <- catboost.load_pool(data = data_x[valid_idx,], label = data_y[valid_idx], cat_features = cat_features)
-    }else{
-      train_pool <- catboost.load_pool(data = data_x[train_idx,], label = data_y[train_idx])
-      valid_pool <- catboost.load_pool(data = data_x[valid_idx,], label = data_y[valid_idx])
-    }
-    
+
+    train_pool <- catboost.load_pool(data = data_x[train_idx,], label = data_y[train_idx], cat_features = cat_features)
+    valid_pool <- catboost.load_pool(data = data_x[valid_idx,], label = data_y[valid_idx], cat_features = cat_features)
+
     ml_cat <- catboost.train(
       learn_pool = train_pool, 
       test_pool = valid_pool,
