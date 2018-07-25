@@ -74,13 +74,12 @@ params <- expand.grid(
   lambda  = c(1, 2, 3)
 )
 optimalParams <- tuneXGB(head(data, sample_num), y=y, params=params, k=kfolds, max_model=max_model)
-saveRDS(optimalParams$scores, file.path(path_output, paste0(ml,"_params.Rda")))
 
 # ------------------------
 # cvpredict catboost 
 # ------------------------
 params = as.list(head(optimalParams$scores[names(params)],1))
-output <- cvpredictXGB(data, test, k=kfolds*2, y=y, params=params)
+output <- cvpredictLGB(data, test, k=kfolds*2, y=y, params=params)
 output$crossvalidation_score
 output$cvpredict_score
 
@@ -88,5 +87,9 @@ output$cvpredict_score
 fwrite(data.frame(ztable=output$ztable), file.path(path_output, file_ztable))
 submit[,y] <- ifelse(output$pred>1, 1, output$pred)
 fwrite(submit, file.path(path_output, file_pred))
+
+# save params
+BestParams = paste0(ml,output$cvpredict_score,"_params.Rda")
+saveRDS(optimalParams$scores, file.path(path_output, BestParams))
 
 
