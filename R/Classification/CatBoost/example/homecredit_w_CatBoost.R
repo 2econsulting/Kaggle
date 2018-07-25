@@ -97,4 +97,5 @@ cat(">> ztable saved! \n")
 file_pred = paste0("SUBMIT_",ml,round(output$cvpredict_score,3)*10^3,".csv")
 submit[,y] <- ifelse(output$pred>1, 1, output$pred)
 fwrite(submit, file.path(path_output, file_pred))
+cat(">> submit saved! \n")
 
