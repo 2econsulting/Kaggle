@@ -17,28 +17,21 @@ path_code = "~/GitHub/2econsulting/Kaggle/R/Classification/XGB"
 source(file.path(path_code,"tuneXGB.R"))
 source(file.path(path_code,"cvpredictXGB.R"))
 
-# set input files 
+# set path 
 path_input = "~/Kaggle/homecredit/input"
-file_data = 'will/will_train.csv'
-file_test = 'will/will_test.csv'
-file_submit  = 'will/sample_submission.csv'
-
-# set output files
 path_output = "~/Kaggle/homecredit/output" 
-file_ztable = "ztableXGB_w_will.csv"
-file_pred = "pred_w_xgb.csv"
 
 # .. 
 y = "TARGET"
-ml = "xgb"
+ml = "XGB"
 max_model = 2
 sample_rate = 0.001
 kfolds = 2
 
 # read data
-data = fread(file.path(path_input, file_data))
-test = fread(file.path(path_input, file_test))
-submit = fread(file.path(path_input, file_submit))
+data = fread(file.path(path_input, 'will/will_train.csv'))
+test = fread(file.path(path_input, 'will/will_test.csv'))
+submit = fread(file.path(path_input, 'will/will_test.csv'))
 
 # sampling
 set.seed(1)
@@ -80,17 +73,23 @@ optimalParams <- tuneXGB(head(data, sample_num), y=y, params=params, k=kfolds, m
 # ------------------------
 params = as.list(head(optimalParams$scores[names(params)],1))
 output <- cvpredictLGB(data, test, k=kfolds*2, y=y, params=params)
-output$crossvalidation_score
-output$cvpredict_score
+cat(">> cv_score :", output$cvpredict_score)
 
-# ztable and submit
+# save param
+file_param = paste0("PARAM_",ml,round(output$cvpredict_score,3)*10^3,".Rda")
+saveRDS(optimalParams$scores, file.path(path_output, file_param))
+cat(">> best params saved! \n")
+
+# save ztable
+file_ztable = paste0("ZTABLE_",ml,round(output$cvpredict_score,3)*10^3,".csv")
 fwrite(data.frame(ztable=output$ztable), file.path(path_output, file_ztable))
+cat(">> ztable saved! \n")
+
+# save submit
+file_pred = paste0("SUBMIT_",ml,round(output$cvpredict_score,3)*10^3,".csv")
 submit[,y] <- ifelse(output$pred>1, 1, output$pred)
 fwrite(submit, file.path(path_output, file_pred))
 
-# save params
-BestParams = paste0("params_",ml,round(output$cvpredict_score,3)*10^3,".Rda")
-saveRDS(optimalParams$scores, file.path(path_output, BestParams))
-cat(">> Best Params saved! \n")
+
 
 
