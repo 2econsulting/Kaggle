@@ -90,7 +90,9 @@ submit[,y] <- ifelse(output$pred>1, 1, output$pred)
 fwrite(submit, file.path(path_output, file_pred))
 
 # save params
-BestParams = paste0(ml,output$cvpredict_score,"_params.Rda")
+BestParams = paste0("params_",ml,round(output$cvpredict_score,3)*10^3,".Rda")
 saveRDS(optimalParams$scores, file.path(path_output, BestParams))
 cat(">> Best Params saved! \n")
+
+
 
