@@ -31,7 +31,7 @@ params = list(
   max_depth = c(2L, 15L),
   subsample = c(0.6, 1),
   colsample_bytree = c(0.6, 1),
-  num_leaves = c(15L, 511L),
+  num_leaves = c(15L, 511L), # this value should be less than 2^max_depth
   min_data = c(20L, 200L) 
 )
 
