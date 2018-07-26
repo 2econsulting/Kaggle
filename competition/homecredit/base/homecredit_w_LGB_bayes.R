@@ -1,11 +1,13 @@
-# title : homecredit_w_LGB
+# title : homecredit_w_LGB_bayes
 # author : jacob
 
 # tuning code
 source(file.path(path_code,"LGB/tuneLGB.R"))
 source(file.path(path_code,"LGB/cvpredictLGB.R"))
+source(file.path(path_code,"LGB/bayesTuneLGB.R"))
 
 # set file
+table_nm = "kageyama"
 file_data = file.path(table_nm,paste0(table_nm,"_train.csv"))
 file_test = file.path(table_nm,paste0(table_nm,"_test.csv"))
 
@@ -24,49 +26,51 @@ test$SK_ID_CURR <- NULL
 names <- which(sapply(data, class) != "numeric")
 data[, (names) := lapply(.SD, as.numeric), .SDcols = names]
 
-# ------------------------
-#  optimal Depth Range
-# ------------------------
-params <- expand.grid(
-  max_depth = seq(from=2, to=15, by=1)
+# params
+params = list(
+  max_depth = c(2L, 15L),
+  subsample = c(0.6, 1),
+  colsample_bytree = c(0.6, 1),
+  num_leaves = c(15L, 511L),
+  min_data = c(20L, 200L) 
 )
-optimalDepthRange <- tuneLGB(head(data, sample_num), y=y, params=params, k=kfolds, max_model=nrow(params))
 
-# ------------------------
-# optimal hyper-params
-# ------------------------
-params <- expand.grid(
-  max_depth = head(optimalDepthRange$scores$max_depth, 3),
-  subsample = seq(from=0.6, to=1, by=0.01),
-  colsample_bytree = seq(from=0.6, to=1, by=0.01), 
-  num_leaves = c(15, 31, 63, 127, 255, 511, 1023, 2047, 4095),
-  min_data = seq(from=20, to=200, by=20)  # if dataset is small like 100 set to 1
+# BayesianOptimization
+optimalParams <- rBayesianOptimization::BayesianOptimization(
+  FUN = function(...){bayesTuneLGB(data=head(data, sample_num), k=kfolds, ...)},
+  bounds = params, 
+  init_points = init_points, 
+  n_iter = n_iter,
+  acq = "ucb", 
+  kappa = 2.576, 
+  eps = 0.0, 
+  verbose = TRUE
 )
-lgb_tuning_rule = which(params$num_leaves < 2^unique(params$max_depth))
-params <- params[lgb_tuning_rule, ]
-optimalParams <- tuneLGB(head(data, sample_num), y=y, params=params, k=kfolds, max_model=max_model)
 
 # ------------------------
 # cvpredict catboost 
 # ------------------------
-params = as.list(head(optimalParams$scores[names(params)],1))
+params = as.list(optimalParams$Best_Par)
 output <- cvpredictLGB(data, test, k=kfolds*2, y=y, params=params)
 cat(">> cv_score :", output$cvpredict_score)
 
 # save param
-file_param = paste0("PARAM_LGB",round(output$cvpredict_score,3)*10^3,table_nm,".Rda")
+file_param = paste0("PARAM_LGBbayes",round(output$cvpredict_score,3)*10^3,table_nm,".Rda")
 saveRDS(optimalParams$scores, file.path(path_output, file_param))
 cat(">> best params saved! \n")
 
 # save ztable
-file_ztable = paste0("ZTABLE_LGB",round(output$cvpredict_score,3)*10^3,table_nm,".csv")
+file_ztable = paste0("ZTABLE_LGBbayes",round(output$cvpredict_score,3)*10^3,table_nm,".csv")
 fwrite(data.frame(ztable=output$ztable), file.path(path_output, file_ztable))
 cat(">> ztable saved! \n")
 
 # save submit
-file_pred = paste0("SUBMIT_LGB",round(output$cvpredict_score,3)*10^3,table_nm,".csv")
+file_pred = paste0("SUBMIT_LGBbayes",round(output$cvpredict_score,3)*10^3,table_nm,".csv")
 submit[,y] <- ifelse(output$pred>1, 1, output$pred)
 fwrite(submit, file.path(path_output, file_pred))
 cat(">> submit saved! \n")
+
+
+
 
 

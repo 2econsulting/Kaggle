@@ -62,6 +62,7 @@ tuneLGB <- function(data, y, params, k, max_model=NULL){
       verbosity = -1,
       record = TRUE,
       eval_freq = 10,
+      learning_rate = learning_rate,
       num_threads = num_threads,
       early_stopping_rounds = early_stopping_rounds
     )

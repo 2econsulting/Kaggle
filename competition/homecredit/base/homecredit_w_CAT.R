@@ -1,4 +1,4 @@
-# title : homecredit_w_CatBoost
+# title : homecredit_w_CAT
 # author : jacob
 
 # tuning code
@@ -56,17 +56,17 @@ output <- cvpredictCAT(data, test, k=kfolds*2, y=y, params=params)
 cat(">> cv_score :", output$cvpredict_score)
 
 # save param
-file_param = paste0("PARAM_CAT",round(output$cvpredict_score,3)*10^3,".Rda")
+file_param = paste0("PARAM_CAT",round(output$cvpredict_score,3)*10^3,table_nm,".Rda")
 saveRDS(optimalParams$scores, file.path(path_output, file_param))
 cat(">> best params saved! \n")
 
 # save ztable
-file_ztable = paste0("ZTABLE_CAT",round(output$cvpredict_score,3)*10^3,".csv")
+file_ztable = paste0("ZTABLE_CAT",round(output$cvpredict_score,3)*10^3,table_nm,".csv")
 fwrite(data.frame(ztable=output$ztable), file.path(path_output, file_ztable))
 cat(">> ztable saved! \n")
 
 # save submit
-file_pred = paste0("SUBMIT_CAT",round(output$cvpredict_score,3)*10^3,".csv")
+file_pred = paste0("SUBMIT_CAT",round(output$cvpredict_score,3)*10^3,table_nm,".csv")
 submit[,y] <- ifelse(output$pred>1, 1, output$pred)
 fwrite(submit, file.path(path_output, file_pred))
 cat(">> submit saved! \n")

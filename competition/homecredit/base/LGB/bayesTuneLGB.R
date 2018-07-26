@@ -1,20 +1,14 @@
-# title : cvpredictLGB
+# title : bayesTuneLGB
 # author : jacob
 
-cvpredictLGB <- function(data, test, k, y, params){
+bayesTuneLGB <- function(data, k, ...){
   
   if(k<2) stop(">> k is very small \n")
-  require(caret)
-  require(Metrics)
-  
-  data <- as.data.frame(data)
-  test <- as.data.frame(test)
-  
-  # convert char to factor(no need if use lgb.prepare_rules)
 
+  data <- as.data.frame(data)
   data_y <- data[,y]
   data_x <- data[,which(colnames(data)!=y)]
-
+  
   # ...
   rules <- lgb.prepare_rules(data = data_x)$rules
   target_idx   <- which(colnames(data)==y)
@@ -25,7 +19,6 @@ cvpredictLGB <- function(data, test, k, y, params){
   
   opreds <- rep(NA, nrow(data))
   score  <- list()
-  Kpreds <- list()
   for(i in 1:k){
     
     train_idx = unlist(KFolds[-i])
@@ -49,13 +42,13 @@ cvpredictLGB <- function(data, test, k, y, params){
     
     set.seed(1)
     ml_lgb <- lgb.train(
-      params = params,
+      params = ...,
       data = dtrain,
       valids = list(test = dvalid),
       objective = "binary",
       eval = "auc", 
       nrounds = iterations,
-      verbosity = -1, # verbose verbosity
+      verbose = -1,
       record = TRUE,
       eval_freq = 10,
       learning_rate = learning_rate,
@@ -66,16 +59,10 @@ cvpredictLGB <- function(data, test, k, y, params){
     mvalid <- as.matrix(lgb.prepare_rules(data=data_x[valid_idx,], rules=rules)[[1]])
     opreds[valid_idx] = predict(ml_lgb, data=mvalid, n=ml_lgb$best_iter)
     score[[i]] = auc(data_y[valid_idx], opreds[valid_idx])
-
-    mtest <- as.matrix(lgb.prepare_rules(data=test, rules=rules)[[1]])
-    Kpreds[[i]] = predict(ml_lgb, data=mtest, n=ml_lgb$best_iter)   
     cat(">> crossvalidation_score :", score[[i]], "\n")
   }
-  crossvalidation_score = do.call(rbind, score)
-  cvpredict_score = auc(data_y, opreds)
-  cat(">> cvpredict_score : ", cvpredict_score, "\n")
-  pred = expm1(rowMeans(do.call(cbind, Kpreds)))
   
-  return(list(ztable=opreds, pred=pred, cvpredict_score=cvpredict_score, crossvalidation_score=crossvalidation_score))
+  list(Score = auc(data_y, opreds), Pred  = opreds)
 }
+
 
