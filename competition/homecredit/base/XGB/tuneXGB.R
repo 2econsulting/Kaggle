@@ -4,9 +4,7 @@
 tuneXGB <- function(data, y, params, k, max_model=NULL){
   
   if(k<2) stop(">> k is very small \n")
-  require(Matrix)
-  require(xgboost)  
-  
+
   data <- as.data.frame(data)
   
   # shuffle params

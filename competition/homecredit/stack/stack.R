@@ -9,7 +9,10 @@ library(data.table)
 library(e1071)
 library(caret)
 library(Metrics)
-library(lightgbm)
+require(Matrix)
+require(lightgbm)  
+library(xgboost)
+library(catboost)
 library(rBayesianOptimization)
 
 # path 
@@ -24,13 +27,11 @@ kfolds = 5
 early_stopping_rounds = 100
 iterations = 10000
 num_threads = 8
-learning_rate = 0.01 
-
+learning_rate = 0.01
 
 # bayesian search options
 init_points = 100      
-n_iter = 100   
-
+n_iter = 100  
 
 # bayesian search 
 table_nm = "kageyama"
@@ -48,10 +49,8 @@ source(file.path(path_code,"homecredit_w_LGB_bayes.R"))
 table_nm = "aguiar"
 source(file.path(path_code,"homecredit_w_LGB_bayes.R"))
 
-
 # random search options 
 max_model = 200
-
 
 # two step random search 
 table_nm = "kageyama"

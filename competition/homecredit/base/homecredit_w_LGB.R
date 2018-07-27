@@ -28,7 +28,7 @@ data[, (names) := lapply(.SD, as.numeric), .SDcols = names]
 #  optimal Depth Range
 # ------------------------
 params <- expand.grid(
-  max_depth = seq(from=2, to=15, by=1)
+  max_depth = seq(from=3, to=9, by=1)
 )
 optimalDepthRange <- tuneLGB(head(data, sample_num), y=y, params=params, k=kfolds, max_model=nrow(params))
 
@@ -39,7 +39,7 @@ params <- expand.grid(
   max_depth = head(optimalDepthRange$scores$max_depth, 3),
   subsample = seq(from=0.6, to=1, by=0.01),
   colsample_bytree = seq(from=0.6, to=1, by=0.01), 
-  num_leaves = c(15, 31, 63, 127, 255, 511, 1023, 2047, 4095),
+  num_leaves = c(15, 31, 63, 127, 255, 511),
   min_data = seq(from=20, to=200, by=20)  # if dataset is small like 100 set to 1
 )
 lgb_tuning_rule = which(params$num_leaves < 2^unique(params$max_depth))
@@ -51,20 +51,20 @@ optimalParams <- tuneLGB(head(data, sample_num), y=y, params=params, k=kfolds, m
 # ------------------------
 params = as.list(head(optimalParams$scores[names(params)],1))
 output <- cvpredictLGB(data, test, k=kfolds*2, y=y, params=params)
-cat(">> cv_score :", output$cvpredict_score)
+cat(">> cv_score :", output$score)
 
 # save param
-file_param = paste0("PARAM_LGB",round(output$cvpredict_score,3)*10^3,table_nm,".Rda")
+file_param = paste0("PARAM_LGB",round(output$score,3)*10^3,table_nm,".Rda")
 saveRDS(optimalParams$scores, file.path(path_output, file_param))
 cat(">> best params saved! \n")
 
 # save ztable
-file_ztable = paste0("ZTABLE_LGB",round(output$cvpredict_score,3)*10^3,table_nm,".csv")
+file_ztable = paste0("ZTABLE_LGB",round(output$score,3)*10^3,table_nm,".csv")
 fwrite(data.frame(ztable=output$ztable), file.path(path_output, file_ztable))
 cat(">> ztable saved! \n")
 
 # save submit
-file_pred = paste0("SUBMIT_LGB",round(output$cvpredict_score,3)*10^3,table_nm,".csv")
+file_pred = paste0("SUBMIT_LGB",round(output$score,3)*10^3,table_nm,".csv")
 submit[,y] <- ifelse(output$pred>1, 1, output$pred)
 fwrite(submit, file.path(path_output, file_pred))
 cat(">> submit saved! \n")

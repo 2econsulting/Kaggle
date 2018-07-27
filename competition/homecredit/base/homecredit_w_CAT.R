@@ -53,20 +53,20 @@ optimalParams <- tuneCAT(head(data, sample_num), y=y, k=kfolds, params=params, m
 # ------------------------
 params = as.list(head(optimalParams$scores[names(params)],1))
 output <- cvpredictCAT(data, test, k=kfolds*2, y=y, params=params)
-cat(">> cv_score :", output$cvpredict_score)
+cat(">> cv_score :", output$score)
 
 # save param
-file_param = paste0("PARAM_CAT",round(output$cvpredict_score,3)*10^3,table_nm,".Rda")
+file_param = paste0("PARAM_CAT",round(output$score,3)*10^3,table_nm,".Rda")
 saveRDS(optimalParams$scores, file.path(path_output, file_param))
 cat(">> best params saved! \n")
 
 # save ztable
-file_ztable = paste0("ZTABLE_CAT",round(output$cvpredict_score,3)*10^3,table_nm,".csv")
+file_ztable = paste0("ZTABLE_CAT",round(output$score,3)*10^3,table_nm,".csv")
 fwrite(data.frame(ztable=output$ztable), file.path(path_output, file_ztable))
 cat(">> ztable saved! \n")
 
 # save submit
-file_pred = paste0("SUBMIT_CAT",round(output$cvpredict_score,3)*10^3,table_nm,".csv")
+file_pred = paste0("SUBMIT_CAT",round(output$score,3)*10^3,table_nm,".csv")
 submit[,y] <- ifelse(output$pred>1, 1, output$pred)
 fwrite(submit, file.path(path_output, file_pred))
 cat(">> submit saved! \n")

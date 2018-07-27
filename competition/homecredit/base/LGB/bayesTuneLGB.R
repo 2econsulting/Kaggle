@@ -17,8 +17,8 @@ bayesTuneLGB <- function(data, k, ...){
   set.seed(1)
   KFolds <- createFolds(1:nrow(data), k = k, list = TRUE, returnTrain = FALSE)        
   
-  opreds <- rep(NA, nrow(data))
-  score  <- list()
+  oof_preds <- rep(NA, nrow(data))
+  oof_score <- list()
   for(i in 1:k){
     
     train_idx = unlist(KFolds[-i])
@@ -57,12 +57,12 @@ bayesTuneLGB <- function(data, k, ...){
     )
     
     mvalid <- as.matrix(lgb.prepare_rules(data=data_x[valid_idx,], rules=rules)[[1]])
-    opreds[valid_idx] = predict(ml_lgb, data=mvalid, n=ml_lgb$best_iter)
-    score[[i]] = auc(data_y[valid_idx], opreds[valid_idx])
-    cat(">> crossvalidation_score :", score[[i]], "\n")
+    oof_preds[valid_idx] = predict(ml_lgb, data=mvalid, n=ml_lgb$best_iter)
+    oof_score[[i]] = auc(data_y[valid_idx], oof_preds[valid_idx])
+    cat(">> oof_score :", oof_score[[i]], "\n")
   }
   
-  list(Score = auc(data_y, opreds), Pred  = opreds)
+  list(Score = auc(data_y, oof_preds), Pred  = oof_preds)
 }
 
 

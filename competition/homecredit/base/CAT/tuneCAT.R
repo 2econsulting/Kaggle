@@ -4,9 +4,7 @@
 tuneCAT <- function(data, y, k, max_model, params){
   
   if(k<2) stop(">> k is very small \n")
-  require(caret)
-  require(Metrics)
-  
+
   data <- as.data.frame(data)
   
   # shuffle params
@@ -43,7 +41,6 @@ tuneCAT <- function(data, y, k, max_model, params){
   }
   output$scores <- data.frame(head(params, max_model), auc=output$scores)
   output$scores <- output$scores[order(output$scores$auc, decreasing = T), ]
-  cat(">> eval_metric is AUC \n")
   return(output)
 }
 
@@ -62,8 +59,8 @@ catboost_cv <- function(data, y, params, k){
   set.seed(1)
   KFolds <- createFolds(1:nrow(data), k = k, list = TRUE, returnTrain = FALSE)
 
-  opreds <- rep(NA, nrow(data))
-  score  <- list()
+  oof_preds <- rep(NA, nrow(data))
+  oof_score <- list()
   for(i in 1:k){
 
     params$use_best_model <- TRUE
@@ -87,14 +84,14 @@ catboost_cv <- function(data, y, params, k){
       params = params
     )
     
-    opreds[valid_idx] = catboost.predict(ml_cat, valid_pool, prediction_type="Probability")
-    score[[i]] = auc(data_y[valid_idx], opreds[valid_idx])
-    cat(">> crossvalidation_score(AUC) :", score[[i]], "\n")
+    oof_preds[valid_idx] = catboost.predict(ml_cat, valid_pool, prediction_type="Probability")
+    oof_score[[i]] = auc(data_y[valid_idx], oof_preds[valid_idx])
+    cat(">> oof_score :", oof_score[[i]], "\n")
   }
   
-  cvpredict_score = auc(data_y, opreds)
-  cat(">> cvpredict_score(AUC) : ", cvpredict_score, "\n")
-  return(data.frame(best_score=cvpredict_score))
+  score = auc(data_y, oof_preds)
+  cat(">> score :", score, "\n")
+  return(data.frame(best_score=score))
 }
 
 

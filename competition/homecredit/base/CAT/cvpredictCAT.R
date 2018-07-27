@@ -25,6 +25,8 @@ cvpredictCAT <- function(data, test, k, y, params){
   # ...
   target_idx <- which(colnames(data)==y)
   cat_features <- which(sapply(data[,-target_idx], is.factor))
+  
+  # params 
   params$use_best_model <- TRUE
   params$random_seed <- 1
   params$loss_function <- 'Logloss'
@@ -41,9 +43,9 @@ cvpredictCAT <- function(data, test, k, y, params){
   set.seed(1)
   KFolds <- createFolds(1:nrow(data), k = k, list = TRUE, returnTrain = FALSE)
   
-  opreds <- rep(NA, nrow(data))
-  score  <- list()
-  Kpreds <- list()
+  oof_preds <- rep(NA, nrow(data))
+  oof_score <- list()
+  sub_preds <- list()
   for(i in 1:k){
     
     train_idx = unlist(KFolds[-i])
@@ -63,24 +65,23 @@ cvpredictCAT <- function(data, test, k, y, params){
       params = params
     )
     
-    opreds[valid_idx] = catboost.predict(ml_cat, valid_pool, prediction_type="Probability")
-    score[[i]] = auc(data_y[valid_idx], opreds[valid_idx])
+    oof_preds[valid_idx] = catboost.predict(ml_cat, valid_pool, prediction_type="Probability")
+    oof_score[[i]] = auc(data_y[valid_idx], oof_preds[valid_idx])
+    cat(">> oof_score :", oof_score[[i]], "\n")
     
     if(sum(sapply(data_x, function(x) is.factor(x)))>0){
       test_pool <- catboost.load_pool(data = test, cat_features = cat_features)
     }else{
       test_pool <- catboost.load_pool(data = test)
     }
-    
-    Kpreds[[i]] = catboost.predict(ml_cat, test_pool, prediction_type="Probability") 
-    cat(">> crossvalidation_score(AUC) :", score[[i]], "\n")
+    sub_preds[[i]] = catboost.predict(ml_cat, test_pool, prediction_type="Probability") 
   }
-  crossvalidation_score = do.call(rbind, score)
-  cvpredict_score = auc(data_y, opreds)
-  cat(">> cvpredict_score(AUC) : ", cvpredict_score, "\n")
-  pred = expm1(rowMeans(do.call(cbind, Kpreds)))
+  score = auc(data_y, oof_preds)
+  cat(">> score: ", score, "\n")
   
-  return(list(ztable=opreds, pred=pred, cvpredict_score=cvpredict_score, crossvalidation_score=crossvalidation_score))
+  pred = expm1(rowMeans(do.call(cbind, sub_preds)))
+  
+  return(list(ztable=oof_preds, pred=pred, score=score))
 }
 
 

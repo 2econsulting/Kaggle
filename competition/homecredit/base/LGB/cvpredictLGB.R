@@ -4,9 +4,7 @@
 cvpredictLGB <- function(data, test, k, y, params){
   
   if(k<2) stop(">> k is very small \n")
-  require(caret)
-  require(Metrics)
-  
+
   data <- as.data.frame(data)
   test <- as.data.frame(test)
   
@@ -23,9 +21,9 @@ cvpredictLGB <- function(data, test, k, y, params){
   set.seed(1)
   KFolds <- createFolds(1:nrow(data), k = k, list = TRUE, returnTrain = FALSE)        
   
-  opreds <- rep(NA, nrow(data))
-  score  <- list()
-  Kpreds <- list()
+  oof_preds <- rep(NA, nrow(data))
+  oof_score <- list()
+  sub_preds <- list()
   for(i in 1:k){
     
     train_idx = unlist(KFolds[-i])
@@ -64,18 +62,18 @@ cvpredictLGB <- function(data, test, k, y, params){
     )
     
     mvalid <- as.matrix(lgb.prepare_rules(data=data_x[valid_idx,], rules=rules)[[1]])
-    opreds[valid_idx] = predict(ml_lgb, data=mvalid, n=ml_lgb$best_iter)
-    score[[i]] = auc(data_y[valid_idx], opreds[valid_idx])
+    oof_preds[valid_idx] = predict(ml_lgb, data=mvalid, n=ml_lgb$best_iter)
+    oof_score[[i]] = auc(data_y[valid_idx], oof_preds[valid_idx])
+    cat(">> oof_score :", oof_score[[i]], "\n")
 
     mtest <- as.matrix(lgb.prepare_rules(data=test, rules=rules)[[1]])
-    Kpreds[[i]] = predict(ml_lgb, data=mtest, n=ml_lgb$best_iter)   
-    cat(">> crossvalidation_score :", score[[i]], "\n")
+    sub_preds[[i]] = predict(ml_lgb, data=mtest, n=ml_lgb$best_iter)
   }
-  crossvalidation_score = do.call(rbind, score)
-  cvpredict_score = auc(data_y, opreds)
-  cat(">> cvpredict_score : ", cvpredict_score, "\n")
-  pred = expm1(rowMeans(do.call(cbind, Kpreds)))
+  score = auc(data_y, oof_preds)
+  cat(">> score :", score, "\n")
   
-  return(list(ztable=opreds, pred=pred, cvpredict_score=cvpredict_score, crossvalidation_score=crossvalidation_score))
+  pred = expm1(rowMeans(do.call(cbind, sub_preds)))
+  
+  return(list(ztable=oof_preds, pred=pred, score=score))
 }
 
