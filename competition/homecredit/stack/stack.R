@@ -27,7 +27,7 @@ kfolds = 5
 early_stopping_rounds = 100
 iterations = 10000
 num_threads = 8
-learning_rate = 0.01
+learning_rate = 0.02
 
 # bayesian search options
 init_points = 100      

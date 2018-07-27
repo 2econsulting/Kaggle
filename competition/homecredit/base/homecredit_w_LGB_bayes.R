@@ -32,7 +32,8 @@ params = list(
   subsample = c(0.6, 1),
   colsample_bytree = c(0.6, 1),
   num_leaves = c(15L, 511L), # this value should be less than 2^max_depth
-  min_data = c(20L, 200L) 
+  min_data = c(20L, 200L),
+  lambda_l2 = c(0, 5)
 )
 
 # BayesianOptimization
